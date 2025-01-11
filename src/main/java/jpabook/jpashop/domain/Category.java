@@ -14,7 +14,7 @@ public class Category {
 
     @Id
     @GeneratedValue
-    @Column(name = "category_item")
+    @Column(name = "category_id")
     private Long id;
 
     @ManyToMany
