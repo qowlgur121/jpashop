@@ -35,6 +35,9 @@ public class Order {
     @Enumerated(EnumType.STRING)
     private OrderStatus status; // 주문상태 [ORDER, CANCEL]
 
+    protected Order(){}
+
+    //==연관관계 메서드==// 즉 연관된 엔티티에 지금의 엔티티를 업데이트 하는 것. 만약 여기서 데이터가 수정되면 다른 곳에서도 그것을 알아야 하니까...
     public void setMember(Member member) {
         this.member = member;
         member.getOrders().add(this);
@@ -51,4 +54,43 @@ public class Order {
         delivery.setOrder(this);
     }
 
+    //==생성 메서드==//
+    public static Order createOrder(Member member, Delivery delivery, OrderItem... orderItems) {
+        Order order = new Order();
+        order.setMember(member);
+        order.setDelivery(delivery);
+
+        // 밑은 관련된 엔티티에도 업데이트를 하게 해줌.
+        for (OrderItem orderItem : orderItems) {
+            order.addOrderItem(orderItem);
+        }
+        order.setStatus(OrderStatus.ORDER);
+        order.setOrderDate(LocalDateTime.now());
+        return order;
+    }
+
+    //==비즈니스 로직==//
+    /**
+     * 주문 취소
+     */
+    public void cancel() {
+        if (delivery.getStatus() == DeliveryStatus.COMP) {
+            throw new IllegalStateException("이미 배송완료된 상품은 취소가 불가능합니다.");
+        }
+        this.setStatus(OrderStatus.CANCEL);
+        // 밑은 관련된 엔티티에도 변화를 업데이트 해주기 위함임. 주문을 했다가 취소하면 상품의 개수가 다시 복구되어야 하니까...
+        for (OrderItem orderItem : orderItems) {
+            orderItem.cancel();
+        }
+    }
+
+    //==조회 로직==//
+    /** 전체 주문 가격 조회 */
+    public int getTotalPrice() {
+        int totalPrice = 0;
+        for (OrderItem orderItem : orderItems) {
+            totalPrice += orderItem.getTotalPrice();
+        }
+        return totalPrice;
+    }
 }
