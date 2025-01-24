@@ -60,6 +60,7 @@ class OrderServiceTest {
         Assertions.assertThrows(NotEnoughStockException.class, () -> orderService.order(member.getId(), item.getId(), orderCount));
     }
 
+    @Test
     public void 주문취소() {
 
         //given
